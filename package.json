@@ -1,0 +1,24 @@
+{
+  "name": "@typinghare/ladder",
+  "version": "0.0.0",
+  "description": "(BETA) Convert JSON objects to class objects; Convert class objects to JSON objects.",
+  "main": "dist/main.js",
+  "types": "dist/main.d.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "test": "jest --verbose"
+  },
+  "keywords": ["JSON", "conversion"],
+  "author": "James Chan",
+  "license": "MIT",
+  "dependencies": {
+    "@types/lodash": "^4.14.192",
+    "@types/node": "^18.15.11",
+    "@typinghare/ts-reflect": "^0.2.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0"
+  }
+}
