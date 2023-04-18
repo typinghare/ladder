@@ -1,75 +1,28 @@
-import { DG } from '../global'
+import { BindOptions, UnitObjectType } from '../common/type'
+import { DG } from '../common/global'
 import { isUndefined } from 'lodash'
-import { Type } from '../common/types'
 
+export type ExtendedBindOptions = BindOptions & {
+    // The mapping name of this property. If the name is not specified, Ladder will take the original name.
+    name?: string
 
-export type BindContext = {
-    // options for <to> conversion
-    toOptions: {
-        // whether this property is bound
-        bound?: boolean,
-        // the name of key from the original JSON object
-        name?: string
-        // the type of value of the bound property
-        type?: Type
-    }
-    // options for <from> conversion
-    fromOptions: {
-        // whether this property is bound
-        bound?: boolean,
-        // the name of key to the generated JSON object
-        name?: string
-        // the type of value in the generated JSON object
-        type?: Type
-    }
-}
-
-export type BindOptions = {
-    // global
-    name?: string,
-    toOptions: Partial<BindContext['toOptions']>,
-    fromOptions: Partial<BindContext['fromOptions']>
-}
-
-
-/**
- * A decorator.
- * @param type
- * @param options
- * @constructor
- */
-export function To(type?: Type, options?: BindOptions['toOptions']): PropertyDecorator {
-    const toOptions = options || {} as BindOptions['toOptions']
-    toOptions.bound = true
-    toOptions.type = type
-
-    return DG.generatePropertyDecorator<BindContext>({ toOptions })
+    // Whether this property is required. Ladder will throw an Exception if the property is missing during conversion.
+    isRequired?: boolean
 }
 
 /**
- * A decorator.
- * @param type
- * @param options
+ * A decorator that make a property be bound.
+ * @param unitObjectType
+ * @param options bind options
  * @constructor
  */
-export function From(type?: Type, options?: BindOptions['fromOptions']): PropertyDecorator {
-    const fromOptions = options || {} as BindOptions['fromOptions']
-    fromOptions.bound = true
-    fromOptions.type = type
+export function Bind(unitObjectType?: UnitObjectType, options?: Partial<ExtendedBindOptions>): PropertyDecorator {
+    return DG.generatePropertyDecorator<ExtendedBindOptions>(undefined, function() {
+        // isObject assignment
+        this.set('isRecord', !!options?.isRecord)
 
-    return DG.generatePropertyDecorator<BindContext>({ fromOptions })
-}
-
-/**
- * A decorator that.
- * @param type
- * @param options
- * @constructor
- */
-export function Bind(type?: Type, options?: Partial<BindOptions>): PropertyDecorator {
-    return DG.generatePropertyDecorator<BindContext>(undefined, function() {
-        const toOptions = this.get('toOptions') || {} as BindContext['toOptions']
-        const fromOptions = this.get('fromOptions') || {} as BindContext['fromOptions']
+        const toOptions = this.getOrDefault('toOptions', {})
+        const fromOptions = this.getOrDefault('fromOptions', {})
         this.set('toOptions', toOptions)
         this.set('fromOptions', fromOptions)
 
@@ -78,17 +31,53 @@ export function Bind(type?: Type, options?: Partial<BindOptions>): PropertyDecor
         fromOptions.bound = true
 
         // type assignment
-        toOptions.type = type
-        fromOptions.type = type
+        if (!isUndefined(unitObjectType)) {
+            toOptions.type = unitObjectType
+            fromOptions.type = unitObjectType
+        }
 
+        // name assignment
         const name = options?.name
         if (!isUndefined(name)) {
             toOptions.name = name
             fromOptions.name = name
         }
 
+        // isRequired assignment
+        if (!isUndefined(options?.isRequired)) {
+            toOptions.isRequired = fromOptions.isRequired = !!options?.isRequired
+        }
+
         // other options
-        Object.assign(toOptions, options?.toOptions)
-        Object.assign(fromOptions, options?.fromOptions)
+        !isUndefined(options) && Object.assign(toOptions, options.toOptions)
+        !isUndefined(options) && Object.assign(fromOptions, options.fromOptions)
     })
+}
+
+export function To(
+    unitObjectType?: UnitObjectType,
+    toOptions?: Partial<ExtendedBindOptions['toOptions']>,
+): PropertyDecorator {
+    return Bind(unitObjectType, { toOptions })
+}
+
+export function From(
+    unitObjectType?: UnitObjectType,
+    fromOptions?: Partial<ExtendedBindOptions['fromOptions']>,
+): PropertyDecorator {
+    return Bind(unitObjectType, { fromOptions })
+}
+
+export function BindRecord(
+    unitObjectType?: UnitObjectType,
+    options?: Partial<ExtendedBindOptions>,
+): PropertyDecorator {
+    options = options || {}
+    options.isRecord = true
+
+    return Bind(unitObjectType, options)
+}
+
+export function Required(): PropertyDecorator {
+    return Bind(undefined, { isRequired: true })
 }

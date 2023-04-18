@@ -1,9 +1,9 @@
-import { Bind, fromJsonObject, JsonEquivalent, toJsonObject } from '../src/main'
+import { Bind, fromJsonObject, JsonEquivalent, Required, toJsonObject } from '../src/main'
 
 @JsonEquivalent()
 class Address {
     @Bind(String) state?: string
-    @Bind(String) city ?: string
+    @Bind(String) @Required() city ?: string
 }
 
 @JsonEquivalent()

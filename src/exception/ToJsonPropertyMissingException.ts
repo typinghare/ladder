@@ -1,8 +1,8 @@
 import { Exception } from './Exception'
 import { Level } from '../Level'
 
-export class IllegalArrayTypeException extends Exception {
+export class ToJsonPropertyMissingException extends Exception {
     public constructor(propertyName: string, className: string, level: Level) {
-        super(`Array type of "${propertyName}" in $${className} (${level.toString()}) is illegal.`)
+        super(`Property "${propertyName}" is missing in $${className} (${level.toString()}).`)
     }
 }

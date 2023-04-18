@@ -1,5 +1,5 @@
-import { DG } from '../global'
-import { ConverterOptions } from '../Converter'
+import { ConverterOptions } from '../common/type'
+import { DG } from '../common/global'
 
 export type JsonEquivalentContext = ConverterOptions & {
     isJsonEquivalent: boolean
